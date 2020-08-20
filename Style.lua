@@ -45,15 +45,16 @@ local Style =
 	ScrollBarHoveredColor = {0.8, 0.8, 0.8, 1.0},
 	SeparatorColor = {0.5, 0.5, 0.5, 0.7},
 	WindowBackgroundColor = {0.2, 0.2, 0.2, 1.0},
-	WindowTitleFocusedColor = {0.26, 0.53, 0.96, 1.0},
-	WindowCloseBgColor = {0.64, 0.64, 0.64, 1.0},
-	WindowCloseColor = {0.0, 0.0, 0.0, 1.0},
-	ButtonColor = {0.55, 0.55, 0.55, 1.0},
-	RadioButtonSelectedColor = {0.2, 0.2, 0.2, 1.0},
-	ButtonHoveredColor = {0.7, 0.7, 0.7, 1.0},
+	WindowTitleFocusedColor = {196/255, 37/255, 66/255, 1},
+	WindowTitleUnfocusedColor = {132/255, 31/255, 50/255, 1},
+	WindowCloseBgColor = {132/255, 31/255, 50/255, 1},
+	WindowCloseColor = {1,1,1,1},
+	ButtonColor = {0.35, 0.35, 0.35, 1.0},
+	RadioButtonSelectedColor = {1,1,1,1},
+	ButtonHoveredColor = {0.5, 0.5, 0.5, 1.0},
 	ButtonPressedColor = {0.8, 0.8, 0.8, 1.0},
-	ButtonDisabledTextColor = {0.35, 0.35, 0.35, 1.0},
-	CheckBoxSelectedColor = {0.0, 0.0, 0.0, 1.0},
+	ButtonDisabledTextColor = {0.1, 0.1, 0.1, 1.0},
+	CheckBoxSelectedColor = {1,1,1,1},
 	TextColor = {0.875, 0.875, 0.875, 1.0},
 	TextHoverBgColor = {0.5, 0.5, 0.5, 1.0},
 	TextURLColor = {0.2, 0.2, 1.0, 1.0},
@@ -66,7 +67,8 @@ local Style =
 	InputEditBgColor = {0.6, 0.6, 0.6, 1.0},
 	InputSelectColor = {0.14, 0.29, 0.53, 0.4},
 	InputSliderColor = {0.1, 0.1, 0.1, 1.0},
-	MultilineTextColor = {0.0, 0.0, 0.0, 1.0},
+	MultilineTextColor = {1.0, 1.0, 1.0, 1.0},
+    CursorColor = {1,1,1},
 
 	WindowRounding = 2.0,
 	ButtonRounding = 2.0,
@@ -85,6 +87,7 @@ function API.Initialize()
 	-- Use love's filesystem functions to support both packaged and unpackaged builds
 	local Items = love.filesystem.getDirectoryItems(Path)
 
+    --[[
 	local StyleName = nil
 	for I, V in ipairs(Items) do
 		if string.find(V, Path, 1, true) == nil then
@@ -105,8 +108,9 @@ function API.Initialize()
 	if not API.SetStyle("Dark") then
 		API.SetStyle(StyleName)
 	end
+    ]]
 
-	Style.Font = love.graphics.newFont(Style.FontSize)
+	Style.Font = love.graphics.newFont(SLAB_FILE_PATH .. "/Internal/Resources/Fonts/basis33.ttf", 16)--Style.FontSize)
 	API.PushFont(Style.Font)
 	Cursor.SetNewLineSize(Style.Font:getHeight())
 end

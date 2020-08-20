@@ -59,3 +59,16 @@ Window: Deprecate window bounds values and use region directly.
 [Window]: IsWindowOpen API function.
 Widgets: Track owning window's alpha channel.
 Widgets: Forward Options parameter to sub widgets.
+
+grob's changes
+==============
+disabled save stating (for now)
+restricted window's y value to be >= 0
+disabled docker (change this to be optional per-window)
+added a font
+defaulting to NoOutline on windows, remove outline from window header (kinda fucked up that option tbh)
+completely overriding window background colors for my own purposes
+changed style color for multiline text, added color for text cursor
+more style changes for buttons
+checkboxes use checks
+added CenterInScreen option for windows, very useful for dialogs so they aren't off for a frame

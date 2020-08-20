@@ -221,6 +221,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			SetDockOptions
 --]]
 local Slab = {}
+Slab.StoreState = false
 
 -- Slab version numbers.
 local Version_Major = 0
@@ -274,7 +275,9 @@ local function WheelMoved(X, Y)
 end
 
 local function OnQuit()
-	SaveState()
+    if Slab.StoreState then
+        SaveState()
+    end
 
 	if QuitFn ~= nil then
 		QuitFn()
@@ -302,7 +305,9 @@ function Slab.Initialize(args)
 	QuitFn = love.quit
 	love.quit = OnQuit
 
-	LoadState()
+    if Slab.StoreState then
+        LoadState()
+    end
 end
 
 --[[
