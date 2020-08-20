@@ -119,6 +119,7 @@ local function NewInstance(Id)
 	Instance.IsAppearing = false
 	Instance.IsOpen = true
 	Instance.NoSavedSettings = false
+    Instance.IsFolded = false
 	return Instance
 end
 
@@ -210,7 +211,7 @@ local function IsSizerEnabled(Instance, Sizer)
 end
 
 local function UpdateSize(Instance, IsObstructed)
-	if Instance ~= nil and Instance.AllowResize then
+	if Instance ~= nil and Instance.AllowResize and not Instance.IsFolded then
 		if Region.IsHoverScrollBar(Instance.Id) then
 			return
 		end
@@ -442,7 +443,7 @@ function Window.Begin(Id, Options)
 	Options.AllowResize = Options.AllowResize == nil and true or Options.AllowResize
 	Options.AllowFocus = Options.AllowFocus == nil and true or Options.AllowFocus
 	Options.Border = Options.Border == nil and 4.0 or Options.Border
-	Options.NoOutline = Options.NoOutline == nil and false or Options.NoOutline
+	Options.NoOutline = Options.NoOutline == nil and true or Options.NoOutline
 	Options.IsMenuBar = Options.IsMenuBar == nil and false or Options.IsMenuBar
 	Options.AutoSizeWindow = Options.AutoSizeWindow == nil and true or Options.AutoSizeWindow
 	Options.AutoSizeWindowW = Options.AutoSizeWindowW == nil and Options.AutoSizeWindow or Options.AutoSizeWindowW
@@ -461,6 +462,7 @@ function Window.Begin(Id, Options)
 	Dock.AlterOptions(Id, Options)
 
 	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
+	local FoldedTitleRounding = {Options.Rounding, Options.Rounding, Options.Rounding, Options.Rounding}
 	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
 
 	if type(Options.Rounding) == 'table' then
@@ -580,19 +582,46 @@ function Window.Begin(Id, Options)
     ----------------------------------------------------------------------------------------------------
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
-
 	DrawCommands.Begin({Channel = ActiveInstance.StackIndex})
+
+    -- draw title of window, if it has one
 	if ActiveInstance.Title ~= "" then
+        -- toggle folding by double clicking title
+        local gap = 0
+        local LastFolded = ActiveInstance.IsFolded
+        if ShowClose then gap = 20 end
+        if Mouse.IsDoubleClicked(1)
+        and MouseX >= ActiveInstance.X
+        and MouseY >= ActiveInstance.Y-OffsetY
+        and MouseX <= ActiveInstance.X+ActiveInstance.W-gap
+        and MouseY <= ActiveInstance.Y then
+            ActiveInstance.IsFolded = not LastFolded
+        end
+
+        if Mouse.IsClicked(1)
+        and MouseX >= ActiveInstance.X
+        and MouseY >= ActiveInstance.Y-OffsetY
+        and MouseX <= ActiveInstance.X+16
+        and MouseY <= ActiveInstance.Y then
+            ActiveInstance.IsFolded = not LastFolded
+        end
+
 		local TitleX = floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
 		local TitleColor = Style.WindowTitleUnfocusedColor
         if ActiveInstance == Stack[1] then
 			TitleColor = Style.WindowTitleFocusedColor
 		end
-		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, TitleRounding)
-        if not Options.NoOutline then
-            --DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, TitleRounding)
+        local CurrentTitleRounding = TitleRounding
+        if ActiveInstance.IsFolded then
+            CurrentTitleRounding = FoldedTitleRounding
         end
-		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
+		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, CurrentTitleRounding)
+		local Dir = (not ActiveInstance.IsFolded) and 180 or 90
+		DrawCommands.Triangle('fill', ActiveInstance.X + OffsetY*0.6, ActiveInstance.Y - OffsetY/2, 4, Dir, Style.TextColor)
+        if not Options.NoOutline then
+            DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, CurrentTitleRounding)
+            DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
+        end
 
 		Region.Begin(ActiveInstance.Id .. '_Title', {
 			X = ActiveInstance.X,
@@ -608,6 +637,7 @@ function Window.Begin(Id, Options)
 		})
 		DrawCommands.Print(ActiveInstance.Title, TitleX, floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
 
+        -- draw the close button if window has one
 		if ShowClose then
 			local CloseBgRadius = OffsetY * 0.4
 			local CloseSize = CloseBgRadius * 0.5
@@ -645,22 +675,30 @@ function Window.Begin(Id, Options)
 		Region.End()
 	end
 
-	Region.Begin(ActiveInstance.Id, {
-		X = ActiveInstance.X,
-		Y = ActiveInstance.Y,
-		W = ActiveInstance.W,
-		H = ActiveInstance.H,
-		ContentW = ActiveInstance.ContentW + ActiveInstance.Border,
-		ContentH = ActiveInstance.ContentH + ActiveInstance.Border,
-		BgColor = ActiveInstance.BackgroundColor,
-		IsObstructed = IsObstructed,
-		MouseX = MouseX,
-		MouseY = MouseY,
-		ResetContent = ActiveInstance.HasResized,
-		Rounding = BodyRounding,
-		NoOutline = Options.NoOutline,
+    -- draw contents of window
+    local RegionHeight = ActiveInstance.H
+    local RegionContentHeight = ActiveInstance.ContentH + ActiveInstance.Border
+    if ActiveInstance.IsFolded then
+        RegionHeight = 0
+        RegionContentHeight = 0
+    end
+    Region.Begin(ActiveInstance.Id, {
+        X = ActiveInstance.X,
+        Y = ActiveInstance.Y,
+        W = ActiveInstance.W,
+        H = RegionHeight,
+        ContentW = ActiveInstance.ContentW + ActiveInstance.Border,
+        ContentH = RegionContentHeight,
+        BgColor = ActiveInstance.BackgroundColor,
+        IsObstructed = IsObstructed,
+        MouseX = MouseX,
+        MouseY = MouseY,
+        ResetContent = ActiveInstance.HasResized,
+        Rounding = BodyRounding,
+        NoOutline = Options.NoOutline,
         PartOfWindow = true,
-	})
+        Hide = ActiveInstance.IsFolded,
+    })
 
 	if Options.ResetSize then
 		ActiveInstance.SizeDeltaX = 0.0
@@ -678,7 +716,7 @@ end
 function Window.End()
 	if ActiveInstance ~= nil then
 		local Handle = ActiveInstance.StatHandle
-		Region.End()
+        Region.End()
 		DrawCommands.End(not ActiveInstance.IsOpen)
 		remove(PendingStack, 1)
 

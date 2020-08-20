@@ -299,6 +299,7 @@ function Region.Begin(Id, Options)
 	Instance.MouseX = Options.MouseX
 	Instance.MouseY = Options.MouseY
 	Instance.AutoSizeContent = Options.AutoSizeContent
+    Instance.Hide = Options.Hide
 
 	if Options.ResetContent then
 		Instance.ContentW = 0.0
@@ -334,24 +335,28 @@ function Region.Begin(Id, Options)
 		end
 	end
 
-	if not Options.NoBackground then
-        if Options.PartOfWindow then
-            DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, {0.05,0.05,0.05,0.85}, Options.Rounding)
-        else
-            DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, {0.2,0.2,0.2,0.85}, Options.Rounding)
+    if not Instance.Hide then
+        if not Options.NoBackground then
+            if Options.PartOfWindow then
+                DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, {0.05,0.05,0.05,0.85}, Options.Rounding)
+            else
+                DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, {0.2,0.2,0.2,0.85}, Options.Rounding)
+            end
+            --DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor, Options.Rounding)
         end
-        --DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor, Options.Rounding)
-	end
-	if not Options.NoOutline then
-		DrawCommands.Rectangle('line', Instance.X, Instance.Y, Instance.W, Instance.H, nil, Options.Rounding)
-	end
-	DrawCommands.TransformPush()
-	DrawCommands.ApplyTransform(Instance.Transform)
+        if not Options.NoOutline then
+            DrawCommands.Rectangle('line', Instance.X, Instance.Y, Instance.W, Instance.H, nil, Options.Rounding)
+        end
+        DrawCommands.TransformPush()
+        DrawCommands.ApplyTransform(Instance.Transform)
+    end
 	Region.ApplyScissor()
 end
 
 function Region.End()
-	DrawCommands.TransformPop()
+    if not ActiveInstance.Hide then
+        DrawCommands.TransformPop()
+    end
 	DrawScrollBars(ActiveInstance)
 
 	if HotInstance == ActiveInstance
