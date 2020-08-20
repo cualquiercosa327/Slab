@@ -425,6 +425,10 @@ end
 function Window.Begin(Id, Options)
 	local StatHandle = Stats.Begin('Window', 'Slab')
 
+    ----------------------------------------------------------------------------------------------------
+    -- load all options
+    ----------------------------------------------------------------------------------------------------
+
 	Options = Options == nil and {} or Options
 	Options.X = Options.X == nil and 50.0 or Options.X
 	Options.Y = Options.Y == nil and 50.0 or Options.Y
@@ -496,7 +500,7 @@ function Window.Begin(Id, Options)
 	end
 
 	ActiveInstance.X = ActiveInstance.TitleDeltaX + Options.X
-	ActiveInstance.Y = ActiveInstance.TitleDeltaY + Options.Y
+	ActiveInstance.Y = max(ActiveInstance.TitleDeltaY + Options.Y, 0)
 	ActiveInstance.W = max(ActiveInstance.SizeDeltaX + Options.W + Options.Border, Options.Border)
 	ActiveInstance.H = max(ActiveInstance.SizeDeltaY + Options.H + Options.Border, Options.Border)
 	ActiveInstance.ContentW = Options.ContentW
@@ -552,6 +556,11 @@ function Window.Begin(Id, Options)
 		end
 	end
 
+    if Options.CenterInScreen then
+        ActiveInstance.X = love.graphics.getWidth()/2 - ActiveInstance.W/2
+        ActiveInstance.Y = love.graphics.getHeight()/2 - ActiveInstance.H/2
+    end
+
 	local MouseX, MouseY = Mouse.Position()
 	local IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
 	if (ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed and Contains(ActiveInstance, MouseX, MouseY)) or
@@ -566,17 +575,23 @@ function Window.Begin(Id, Options)
 	UpdateSize(ActiveInstance, IsObstructed)
 	UpdateTitleBar(ActiveInstance, IsObstructed, Options.AllowMove)
 
+    ----------------------------------------------------------------------------------------------------
+    -- start drawing
+    ----------------------------------------------------------------------------------------------------
+
 	DrawCommands.SetLayer(ActiveInstance.Layer)
 
 	DrawCommands.Begin({Channel = ActiveInstance.StackIndex})
 	if ActiveInstance.Title ~= "" then
 		local TitleX = floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
-		local TitleColor = ActiveInstance.BackgroundColor
-		if ActiveInstance == Stack[1] then
+		local TitleColor = Style.WindowTitleUnfocusedColor
+        if ActiveInstance == Stack[1] then
 			TitleColor = Style.WindowTitleFocusedColor
 		end
 		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, TitleRounding)
-		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, TitleRounding)
+        if not Options.NoOutline then
+            --DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, TitleRounding)
+        end
 		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
 
 		Region.Begin(ActiveInstance.Id .. '_Title', {
@@ -589,7 +604,7 @@ function Window.Begin(Id, Options)
 			IgnoreScroll = true,
 			MouseX = MouseX,
 			MouseY = MouseY,
-			IsObstructed = IsObstructed
+			IsObstructed = IsObstructed,
 		})
 		DrawCommands.Print(ActiveInstance.Title, TitleX, floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
 
@@ -603,14 +618,21 @@ function Window.Begin(Id, Options)
 				CloseY - OffsetY * 0.5 <= MouseY and MouseY <= CloseY + CloseBgRadius and
 				not IsObstructed
 
+            DrawCommands.Circle(
+                'fill',
+                CloseX,
+                CloseY,
+                CloseBgRadius,
+                Style.WindowCloseBgColor
+            )
+
 			if IsCloseHovered then
-				DrawCommands.Circle(
-					'fill',
-					CloseX,
-					CloseY,
-					CloseBgRadius,
-					Style.WindowCloseBgColor
-				)
+                DrawCommands.Cross(
+                    CloseX,
+                    CloseY,
+                    CloseSize,
+                    Style.WindowCloseColor
+                )
 
 				if Mouse.IsClicked(1) then
 					ActiveInstance.IsOpen = false
@@ -618,13 +640,6 @@ function Window.Begin(Id, Options)
 					Options.IsOpen = false
 				end
 			end
-
-			DrawCommands.Cross(
-				CloseX,
-				CloseY,
-				CloseSize,
-				Style.WindowCloseColor
-			)
 		end
 
 		Region.End()
@@ -643,7 +658,8 @@ function Window.Begin(Id, Options)
 		MouseY = MouseY,
 		ResetContent = ActiveInstance.HasResized,
 		Rounding = BodyRounding,
-		NoOutline = Options.NoOutline
+		NoOutline = Options.NoOutline,
+        PartOfWindow = true,
 	})
 
 	if Options.ResetSize then

@@ -312,13 +312,12 @@ function Dialog.Begin(Id, Options)
 	end
 
 	Options = Options == nil and {} or Options
-	Options.X = floor(love.graphics.getWidth() * 0.5 - Instance.W * 0.5)
-	Options.Y = floor(love.graphics.getHeight() * 0.5 - Instance.H * 0.5)
 	Options.Layer = 'Dialog'
 	Options.AllowFocus = false
 	Options.AllowMove = false
 	Options.AutoSizeWindow = Options.AutoSizeWindow == nil and true or Options.AutoSizeWindow
 	Options.NoSavedSettings = true
+    Options.CenterInScreen = true
 
 	Window.Begin(Instance.Id, Options)
 

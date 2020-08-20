@@ -124,6 +124,7 @@ end
 function Dock.DrawOverlay()
 	Pending = nil
 
+    --[[
 	DrawCommands.SetLayer('Dock')
 	DrawCommands.Begin()
 
@@ -138,6 +139,7 @@ function Dock.DrawOverlay()
 			Instance.IsTearing = false
 		end
 	end
+    ]]
 end
 
 function Dock.Commit()

@@ -276,8 +276,8 @@ function Region.Begin(Id, Options)
 	Options.ContentW = Options.ContentW == nil and 0.0 or Options.ContentW
 	Options.ContentH = Options.ContentH == nil and 0.0 or Options.ContentH
 	Options.AutoSizeContent = Options.AutoSizeContent == nil and false or Options.AutoSizeContent
-	Options.BgColor = Options.BgColor == nil and Style.WindowBackgroundColor or Options.BgColor
-	Options.NoOutline = Options.NoOutline == nil and false or Options.NoOutline
+	Options.BgColor = Style.WindowBackgroundColor--Options.BgColor == nil and Style.WindowBackgroundColor or Options.BgColor
+	Options.NoOutline = Options.NoOutline == nil and true or Options.NoOutline
 	Options.NoBackground = Options.NoBackground == nil and false or Options.NoBackground
 	Options.IsObstructed = Options.IsObstructed == nil and false or Options.IsObstructed
 	Options.Intersect = Options.Intersect == nil and false or Options.Intersect
@@ -335,7 +335,12 @@ function Region.Begin(Id, Options)
 	end
 
 	if not Options.NoBackground then
-		DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor, Options.Rounding)
+        if Options.PartOfWindow then
+            DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, {0.05,0.05,0.05,0.85}, Options.Rounding)
+        else
+            DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, {0.2,0.2,0.2,0.85}, Options.Rounding)
+        end
+        --DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor, Options.Rounding)
 	end
 	if not Options.NoOutline then
 		DrawCommands.Rectangle('line', Instance.X, Instance.Y, Instance.W, Instance.H, nil, Options.Rounding)

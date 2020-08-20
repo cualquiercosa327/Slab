@@ -76,7 +76,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 
 	DrawCommands.Rectangle('fill', X, Y, BoxW, BoxH, Color, Options.Rounding)
 	if Enabled then
-		DrawCommands.Cross(X + Radius, Y + Radius, Radius - 1.0, Style.CheckBoxSelectedColor)
+		DrawCommands.Check(X + Radius, Y + Radius, Radius - 1.0, Style.CheckBoxSelectedColor)
 	end
 	if Label ~= "" then
 		local CursorY = Cursor.GetY()

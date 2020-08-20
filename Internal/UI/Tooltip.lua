@@ -86,7 +86,9 @@ function Tooltip.Begin(Tip)
 			Layer = 'ContextMenu',
 			ResetWindowSize = ResetSize,
 			CanObstruct = false,
-			NoSavedSettings = true
+			NoSavedSettings = true,
+            ResetPosition = true,
+            ResetLayout = true,
 		})
 		Text.BeginFormatted(Tip, {Color = TextColor})
 		OffsetY = Window.GetHeight()

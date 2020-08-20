@@ -696,7 +696,7 @@ local function DrawCursor(Instance, X, Y, W, H)
 		local CY = Y + CY
 		H = Text.GetHeight()
 
-		DrawCommands.Line(CX, CY, CX, CY + H, 1.0, {0.0, 0.0, 0.0, TextCursorAlpha})
+		DrawCommands.Line(CX, CY, CX, CY + H, 1.0, {Style.CursorColor[1],Style.CursorColor[2],Style.CursorColor[3], TextCursorAlpha})
 	end
 end
 
