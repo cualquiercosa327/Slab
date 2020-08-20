@@ -110,7 +110,7 @@ function API.Initialize()
 	end
     ]]
 
-	Style.Font = love.graphics.newFont(SLAB_FILE_PATH .. "/Internal/Resources/Fonts/basis33.ttf", 16)--Style.FontSize)
+	Style.Font = love.graphics.newFont(SLAB_FILE_PATH .. "/Internal/Resources/Fonts/ProggyClean.ttf", 16)--Style.FontSize)
 	API.PushFont(Style.Font)
 	Cursor.SetNewLineSize(Style.Font:getHeight())
 end
