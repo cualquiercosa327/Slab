@@ -1058,6 +1058,7 @@ function Input.Begin(Id, Options)
 			ClearFocus = true
 			Focused = nil
 		end
+        TextCursorAlpha = 0
 	end
 
 	if FocusToNext and LastFocused == nil then
@@ -1069,6 +1070,7 @@ function Input.Begin(Id, Options)
 		TextCursorPos = 0
 		TextCursorPosLine = 0
 		TextCursorPosLineNumber = 1
+        TextCursorAlpha = 0
 	end
 
 	if LastFocused == Instance then
