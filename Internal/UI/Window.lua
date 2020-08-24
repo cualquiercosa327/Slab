@@ -353,7 +353,7 @@ function Window.Top()
 	return ActiveInstance
 end
 
-function Window.IsObstructed(X, Y, SkipScrollCheck)
+function Window.IsObstructed(X, Y, SkipScrollCheck, IgnoreFolding)
 	if Region.IsScrolling() then
 		return true
 	end
@@ -364,6 +364,10 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 		if not ActiveInstance.IsOpen then
 			return true
 		end
+
+        if not IgnoreFolding and ActiveInstance.IsFolded then
+            return true
+        end
 
 		if ActiveInstance.IsMoving then
 			return false
@@ -575,7 +579,7 @@ function Window.Begin(Id, Options)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
 	UpdateSize(ActiveInstance, IsObstructed)
-	UpdateTitleBar(ActiveInstance, IsObstructed, Options.AllowMove)
+	UpdateTitleBar(ActiveInstance, Window.IsObstructed(MouseX, MouseY, true, true), Options.AllowMove)
 
     ----------------------------------------------------------------------------------------------------
     -- start drawing
